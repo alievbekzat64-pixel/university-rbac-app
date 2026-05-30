@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Система контроля доступа</title>
+  <style>
+    :root {
+      --bg: #f3f6fa;
+      --panel: #ffffff;
+      --panel-soft: #f8fafc;
+      --text: #111827;
+      --muted: #64748b;
+      --line: #d8e0ea;
+      --line-soft: #eef2f7;
+      --primary: #1f4e79;
+      --primary-dark: #163a5b;
+      --primary-soft: #e8f1fa;
+      --success: #1b7f3a;
+      --danger: #b42318;
+      --warning: #a15c07;
+      --sidebar: #1f2937;
+      --sidebar-dark: #111827;
+      --shadow: 0 8px 20px rgba(15,23,42,.08);
+      --radius: 8px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Segoe UI", Arial, sans-serif;
+      font-size: 15px;
+    }
+
+    input, select, textarea, button { font: inherit; }
+    button { border: 0; cursor: pointer; }
+
+    .login-page {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: linear-gradient(135deg, #1f2937, #0f172a);
+    }
+
+    .login-box {
+      width: min(960px, 100%);
+      display: grid;
+      grid-template-columns: 1fr 390px;
+      background: var(--panel);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 24px 70px rgba(0,0,0,.34);
+    }
+
+    .login-info {
+      padding: 40px;
+      color: #fff;
+      background: linear-gradient(135deg, #1f4e79, #0f172a);
+    }
+
+    .login-info h1 { margin: 0 0 14px; font-size: 32px; line-height: 1.12; }
+    .login-info p { color: #dbeafe; line-height: 1.6; margin: 0 0 18px; }
+
+    .login-points { display: grid; gap: 10px; margin-top: 26px; }
+    .login-point {
+      padding: 12px 14px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.08);
+      border-radius: 8px;
+    }
+
+    .login-form { padding: 36px; }
+    .login-form h2 { margin: 0 0 8px; font-size: 24px; }
+    .login-form p { margin: 0 0 20px; color: var(--muted); line-height: 1.45; }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 286px 1fr;
+    }
+
+    .sidebar {
+      background: linear-gradient(180deg, var(--sidebar), var(--sidebar-dark));
+      color: #e5e7eb;
+      padding: 18px 16px;
+      border-right: 1px solid rgba(255,255,255,.08);
+      overflow: auto;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 8px 18px;
+      border-bottom: 1px solid rgba(255,255,255,.12);
+      margin-bottom: 16px;
+    }
+
+    .brand-logo {
+      width: 42px;
+      height: 42px;
+      border-radius: 8px;
+      background: #2563eb;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-weight: 800;
+    }
+
+    .brand-title { font-weight: 800; font-size: 17px; }
+    .brand-subtitle { color: #cbd5e1; font-size: 12px; margin-top: 2px; }
+
+    .user-card {
+      margin: 0 4px 14px;
+      padding: 14px;
+      border-radius: 8px;
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.12);
+    }
+
+    .user-name { font-size: 17px; font-weight: 800; margin-bottom: 8px; word-break: break-word; }
+    .role-badge {
+      display: inline-block;
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: rgba(96,165,250,.18);
+      color: #bfdbfe;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .nav { display: grid; gap: 5px; }
+    .nav button {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border-radius: 7px;
+      background: transparent;
+      color: #dbeafe;
+      text-align: left;
+    }
+    .nav button:hover, .nav button.active { background: rgba(59,130,246,.2); color: #fff; }
+    .nav button.hidden { display: none; }
+    .nav small { color: #93c5fd; font-size: 11px; }
+
+    .sidebar-note {
+      margin: 22px 6px 0;
+      color: #aebccc;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .main { min-width: 0; display: grid; grid-template-rows: auto 1fr; }
+    .topbar {
+      background: var(--panel);
+      border-bottom: 1px solid var(--line);
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+    }
+    .topbar h1 { margin: 0; font-size: 24px; }
+    .topbar p { margin: 4px 0 0; color: var(--muted); }
+    .content { padding: 22px 24px 40px; overflow: auto; }
+
+    .section { display: none; }
+    .section.active { display: block; }
+
+    .grid { display: grid; gap: 16px; }
+    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+
+    .card h2, .card h3 { margin: 0 0 10px; color: #0f172a; }
+    .card h2 { font-size: 20px; }
+    .card h3 { font-size: 17px; }
+    .desc { margin: 0 0 14px; color: var(--muted); line-height: 1.45; }
+
+    .form { display: grid; gap: 12px; }
+    label { display: grid; gap: 6px; font-weight: 700; color: #334155; font-size: 13px; }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px 11px;
+      border-radius: 7px;
+      border: 1px solid var(--line);
+      background: #fff;
+      outline: none;
+    }
+    textarea { min-height: 92px; resize: vertical; }
+    input:focus, select:focus, textarea:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
+
+    .btn {
+      min-height: 40px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 13px;
+      border-radius: 7px;
+      background: var(--primary);
+      color: #fff;
+      font-weight: 700;
+    }
+    .btn:hover { background: var(--primary-dark); }
+    .btn.success { background: var(--success); }
+    .btn.success:hover { background: #166534; }
+    .btn.danger { background: var(--danger); }
+    .btn.danger:hover { background: #8f1d16; }
+    .btn.secondary { background: #e2e8f0; color: #0f172a; }
+    .btn.secondary:hover { background: #cbd5e1; }
+    .btn.warning { background: var(--warning); }
+
+    .btn-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+
+    .table-box {
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    table { width: 100%; border-collapse: collapse; min-width: 760px; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid var(--line-soft); text-align: left; vertical-align: top; }
+    th { background: #f1f5f9; color: #334155; font-size: 12px; text-transform: uppercase; letter-spacing: .03em; }
+    tr:hover td { background: #f8fafc; }
+    tr:last-child td { border-bottom: 0; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      background: #e2e8f0;
+      color: #334155;
+      white-space: nowrap;
+      margin: 2px;
+    }
+    .badge.green { background: #dcfce7; color: #166534; }
+    .badge.red { background: #fee2e2; color: #991b1b; }
+    .badge.blue { background: #dbeafe; color: #1e40af; }
+    .badge.orange { background: #ffedd5; color: #9a3412; }
+    .badge.gray { background: #e2e8f0; color: #334155; }
+
+    .alert {
+      display: none;
+      margin-bottom: 14px;
+      padding: 12px 14px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      line-height: 1.4;
+    }
+    .alert.show { display: block; }
+    .alert.success { background: #dcfce7; color: #166534; border-color: #bbf7d0; }
+    .alert.error { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
+    .alert.info { background: #dbeafe; color: #1e40af; border-color: #bfdbfe; }
+
+    .empty { padding: 22px; color: var(--muted); text-align: center; }
+    .stat { border-left: 4px solid var(--primary); }
+    .stat-value { font-size: 26px; font-weight: 800; color: var(--primary); margin-top: 5px; }
+    .mono { font-family: Consolas, Monaco, monospace; font-size: 13px; white-space: pre-wrap; word-break: break-word; }
+
+    .профиль-lists {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 1100px) {
+      .app { grid-template-columns: 1fr; }
+      .grid-2, .grid-3, .профиль-lists { grid-template-columns: 1fr; }
+      .nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 760px) {
+      .login-box { grid-template-columns: 1fr; }
+      .topbar { align-items: flex-start; flex-direction: column; }
+      .content { padding: 16px; }
+      .nav { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="loginView" class="login-page">
+    <div class="login-box">
+      <div class="login-info">
+        <h1>Система контроля доступа</h1>
+        <p>Веб-приложение для управления пользователями, ролями и доступом к разделам.</p>
+        <p>Система показывает, как разные пользователи получают доступ только к разрешённым разделам.</p>
+        <div class="login-points">
+          <div class="login-point">доступ ограничивает доступ к разделам и действиям.</div>
+          <div class="login-point">Запрещённые действия возвращают HTTP проверка и попадают в журнал безопасности.</div>
+          <div class="login-point">Отчёты по безопасности и матрице доступа можно скачать в TXT.</div>
+        </div>
+      </div>
+
+      <div class="login-form">
+        <h2>Вход</h2>
+        <p>Для входа используйте индивидуальные учетные данные пользователя.</p>
+        <div id="loginAlert" class="alert"></div>
+        <form id="loginForm" class="form">
+          <label>Логин <input id="loginUsername" placeholder="Введите логин" autocomplete="username" required></label>
+          <label>Пароль <input id="loginPassword" type="password" placeholder="Введите пароль" autocomplete="current-password" required></label>
+          <button class="btn" type="submit">Войти</button>
+        </form>
+        <p class="desc" style="margin-top:14px">Введите логин и пароль, выданные администратором системы.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="appView" class="app" style="display:none">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">КД</div>
+        <div>
+          <div class="brand-title">Контроль доступа</div>
+          <div class="brand-subtitle">Ролевая защита</div>
+        </div>
+      </div>
+
+      <div class="user-card">
+        <div id="currentFullName" class="user-name">—</div>
+        <div id="currentUsername" class="desc" style="margin:0 0 8px; color:#cbd5e1">—</div>
+        <span id="currentRole" class="role-badge">роль: —</span>
+      </div>
+
+      <nav id="nav" class="nav">
+        <button data-section="dashboard">Главная <small>профиль</small></button>
+        <button data-section="students">Студенты <small>студенты</small></button>
+        <button data-section="grades">Оценки <small>оценки</small></button>
+        <button data-section="requests">Заявки <small>заявки</small></button>
+        <button data-section="finance">Бухгалтерия <small>финансы</small></button>
+        <button data-section="security">ИБ-логи <small>журнал</small></button>
+        <button data-section="users">Пользователи <small>пользователи</small></button>
+        <button data-section="matrix">Матрица доступа <small>доступ</small></button>
+        <button data-section="tests">Проверка доступа <small>проверка</small></button>
+      </nav>
+
+      <div class="sidebar-note">
+        Тема диплома:<br>
+        «Использование технологии разделения прав доступа для обеспечения безопасности веб-приложений».
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h1 id="pageTitle">Главная</h1>
+          <p id="pageSubtitle">Профиль текущего пользователя и доступные модули.</p>
+        </div>
+        <button id="logoutBtn" class="btn secondary">Выйти</button>
+      </header>
+
+      <div class="content">
+        <div id="globalAlert" class="alert"></div>
+
+        <section id="dashboard" class="section">
+          <div class="grid grid-3">
+            <div class="card stat">
+              <h3>Сервер</h3>
+              <div id="apiStatus" class="stat-value">—</div>
+              <p class="desc">Проверка через /health</p>
+            </div>
+            <div class="card stat">
+              <h3>Текущая роль</h3>
+              <div id="dashRole" class="stat-value">—</div>
+              <p class="desc">Роль проверяется на backend</p>
+            </div>
+            <div class="card stat">
+              <h3>Модель</h3>
+              <div class="stat-value">доступ</div>
+              <p class="desc">Разделение прав по ролям</p>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:16px">
+            <h2>Профиль пользователя</h2>
+            <p class="desc">Здесь показано, какие модули доступны текущей роли и какие действия для неё запрещены.</p>
+            <div id="профильBox" class="профиль-lists">
+              <div class="empty">Профиль загружается...</div>
+            </div>
+          </div>
+        </section>
+
+        <section id="students" class="section">
+          <div class="grid grid-2">
+            <div class="card">
+              <h2>Карточки студентов</h2>
+              <p class="desc">Просмотр доступен учебной части, преподавателю, студенту и бухгалтерии. Изменение — Admin и DeanOffice.</p>
+              <button class="btn" onclick="loadStudents()">Загрузить студентов</button>
+            </div>
+
+            <div class="card">
+              <h2>Добавить студента</h2>
+              <p class="desc">Доступ на создание: Администратор, учебная часть.</p>
+              <form id="studentForm" class="form">
+                <label>Код студента <input id="studentCode" placeholder="KSTU-2026-004" required></label>
+                <label>ФИО <input id="studentFullName" placeholder="Фамилия Имя" required></label>
+                <label>Группа <input id="studentGroup" placeholder="БИС-1-22" required></label>
+                <label>Факультет <input id="studentFaculty" placeholder="Информационная безопасность" required></label>
+                <button class="btn" type="submit">Создать карточку</button>
+              </form>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:16px">
+            <h2>Список студентов</h2>
+            <div id="studentsTable" class="table-box"><div class="empty">Нажмите «Загрузить студентов»</div></div>
+          </div>
+        </section>
+
+        <section id="grades" class="section">
+          <div class="grid grid-2">
+            <div class="card">
+              <h2>Ведомость оценок</h2>
+              <p class="desc">Просмотр: Администратор, учебная часть, Teacher, Student. Выставление: администратор, преподаватель.</p>
+              <button class="btn" onclick="loadGrades()">Загрузить оценки</button>
+            </div>
+
+            <div class="card">
+              <h2>Выставить оценку</h2>
+              <p class="desc">Доступ: администратор, преподаватель.</p>
+              <form id="gradeForm" class="form">
+                <label>Студент <input id="gradeStudent" placeholder="Субанов Батырбек" required></label>
+                <label>Предмет <input id="gradeSubject" placeholder="Безопасность веб-приложений" required></label>
+                <label>Оценка <input id="gradeValue" placeholder="отлично" required></label>
+                <button class="btn" type="submit">Сохранить оценку</button>
+              </form>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:16px">
+            <h2>Оценки</h2>
+            <div id="оценкиTable" class="table-box"><div class="empty">Нажмите «Загрузить оценки»</div></div>
+          </div>
+        </section>
+
+        <section id="requests" class="section">
+          <div class="grid grid-2">
+            <div class="card">
+              <h2>Создать академическую заявку</h2>
+              <p class="desc">Доступ: Администратор, учебная часть, Student.</p>
+              <form id="requestForm" class="form">
+                <label>Тема <input id="requestTitle" placeholder="Справка с места учебы" required></label>
+                <label>Содержание <textarea id="requestContent" required>Прошу выдать справку с места учебы.</textarea></label>
+                <button class="btn" type="submit">Отправить заявку</button>
+              </form>
+            </div>
+
+            <div class="card">
+              <h2>Реестр заявок</h2>
+              <p class="desc">Просмотр: Администратор, учебная часть, Teacher, Student.</p>
+              <button class="btn" onclick="loadRequests()">Загрузить заявки</button>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:16px">
+            <h2>Заявки</h2>
+            <div id="заявкиTable" class="table-box"><div class="empty">Нажмите «Загрузить заявки»</div></div>
+          </div>
+        </section>
+
+        <section id="finance" class="section">
+          <div class="grid grid-2">
+            <div class="card">
+              <h2>Бухгалтерский отчет</h2>
+              <p class="desc">Доступ: администратор, бухгалтер.</p>
+              <button class="btn" onclick="loadFinance()">Показать отчет</button>
+            </div>
+            <div class="card stat">
+              <h3>Общая сумма оплат</h3>
+              <div id="финансыTotal" class="stat-value">—</div>
+              <p id="финансыCount" class="desc">Количество платежей: —</p>
+            </div>
+          </div>
+          <div class="card" style="margin-top:16px">
+            <h2>Платежи студентов</h2>
+            <div id="финансыTable" class="table-box"><div class="empty">Нажмите «Показать отчет»</div></div>
+          </div>
+        </section>
+
+        <section id="security" class="section">
+          <div class="grid grid-2">
+            <div class="card">
+              <h2>Отчет по безопасности</h2>
+              <p class="desc">Доступ: администратор, специалист ИБ. Показывает активных пользователей, блокировки, ошибки входа и запреты доступа.</p>
+              <div class="btn-row">
+                <button class="btn" onclick="loadSecurityReport()">Показать отчет</button>
+                <button class="btn secondary" onclick="downloadFile('/security-report/download', 'UNIVERSITY_SECКДITY_REPORT.txt')">Скачать отчет</button>
+              </div>
+            </div>
+            <div class="card">
+              <h2>Журнал ИБ</h2>
+              <p class="desc">Здесь фиксируются входы, ошибки и forbidden-access события.</p>
+              <div class="btn-row">
+                <button class="btn" onclick="loadLogs()">Загрузить логи</button>
+                <button class="btn secondary" onclick="downloadFile('/security-logs/download', 'журнал_SECКДITY_LOGS.txt')">Скачать логи</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-3" style="margin-top:16px" id="securityStats"></div>
+
+          <div class="card" style="margin-top:16px">
+            <h2>События безопасности</h2>
+            <div id="logsTable" class="table-box"><div class="empty">Нажмите «Загрузить логи»</div></div>
+          </div>
+        </section>
+
+        <section id="users" class="section">
+          <div class="grid grid-2">
+            <div class="card">
+              <h2>Создать пользователя</h2>
+              <p class="desc">Доступ: только администратор. Пользователи создаются вручную администратором.</p>
+              <form id="userForm" class="form">
+                <label>ФИО <input id="newFullName" placeholder="Иванов Иван" required></label>
+                <label>Логин <input id="newUsername" placeholder="teacher1" required></label>
+                <label>Пароль <input id="newPassword" type="password" placeholder="не менее 8 символов" required></label>
+                <label>
+                  Роль
+                  <select id="newRoleId">
+                    <option value="1">Администратор</option>
+                    <option value="2">Специалист ИБ</option>
+                    <option value="3">Учебная часть</option>
+                    <option value="4">Преподаватель</option>
+                    <option value="5">Студент</option>
+                    <option value="6">Бухгалтер</option>
+                  </select>
+                </label>
+                <button class="btn" type="submit">Создать пользователя</button>
+              </form>
+            </div>
+
+            <div class="card">
+              <h2>Учетные записи</h2>
+              <p class="desc">Администратор может просматривать, активировать и блокировать пользователей.</p>
+              <button class="btn" onclick="loadUsers()">Загрузить пользователей</button>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:16px">
+            <h2>Пользователи</h2>
+            <div id="usersTable" class="table-box"><div class="empty">Нажмите «Загрузить пользователей»</div></div>
+          </div>
+        </section>
+
+        <section id="matrix" class="section">
+          <div class="card">
+            <h2>Матрица разделения прав доступа</h2>
+            <p class="desc">Таблица показывает роли и операции для каждого модуля. Это можно использовать в дипломе как результат проектирования доступ.</p>
+            <div class="btn-row">
+              <button class="btn" onclick="loadMatrix()">Загрузить матрицу</button>
+              <button class="btn secondary" onclick="downloadFile('/rbac-report/download', 'доступ_ACCESS_MATRIX_REPORT.txt')">Скачать доступ-отчет</button>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:16px">
+            <h2>доступ-таблица</h2>
+            <div id="matrixTable" class="table-box"><div class="empty">Нажмите «Загрузить матрицу»</div></div>
+          </div>
+        </section>
+
+        <section id="tests" class="section">
+          <div class="card">
+            <h2>Проверка доступа текущей роли</h2>
+            <p class="desc">
+              Система выполнит реальные запросы к защищенным endpoint-ам. Если роль не имеет права,
+              сервер вернет HTTP проверка и событие попадет в журнал безопасности.
+            </p>
+            <button class="btn warning" onclick="runAccessTests()">Запустить проверку доступа</button>
+          </div>
+
+          <div class="card" style="margin-top:16px">
+            <h2>Результаты проверки</h2>
+            <div id="testsTable" class="table-box"><div class="empty">Проверка ещё не запускалась</div></div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const API_BASE = location.origin;
+
+    const state = {
+      token: localStorage.getItem("univ_token") || "",
+      username: localStorage.getItem("univ_username") || "",
+      fullName: localStorage.getItem("univ_full_name") || "",
+      role: localStorage.getItem("univ_role") || ""
+    };
+
+    const UI_ACCESS = {
+      dashboard: ["Admin", "IB", "DeanOffice", "Teacher", "Student", "Accountant"],
+      students: ["Admin", "DeanOffice", "Teacher", "Student", "Accountant"],
+      grades: ["Admin", "DeanOffice", "Teacher", "Student"],
+      requests: ["Admin", "DeanOffice", "Teacher", "Student"],
+      finance: ["Admin", "Accountant"],
+      security: ["Admin", "IB"],
+      users: ["Admin"],
+      matrix: ["Admin", "IB"],
+      tests: ["Admin", "IB", "DeanOffice", "Teacher", "Student", "Accountant"]
+    };
+
+    const DEFAULT_SECTION = {
+      Admin: "dashboard",
+      IB: "security",
+      DeanOffice: "students",
+      Teacher: "grades",
+      Student: "requests",
+      Accountant: "finance"
+    };
+
+    const TITLES = {
+      dashboard: ["Главная", "Профиль текущего пользователя и доступные модули."],
+      students: ["Студенты", "Карточки студентов и учебные сведения."],
+      grades: ["Оценки", "Ведомость оценок и права преподавателя."],
+      requests: ["Заявки", "Академические заявки студентов."],
+      finance: ["Бухгалтерия", "Финансовые сведения доступны только разрешённым ролям."],
+      security: ["Информационная безопасность", "Журнал событий и отчет по безопасности."],
+      users: ["Пользователи", "Администрирование учетных записей."],
+      matrix: ["Матрица доступа", "Ролевая модель и операции доступа."],
+      tests: ["Проверка доступа", "Демонстрация разрешенных и запрещенных запросов."]
+    };
+
+    const ROLE_COLOR = {
+      Admin: "blue",
+      IB: "orange",
+      DeanOffice: "blue",
+      Teacher: "green",
+      Student: "gray",
+      Accountant: "orange"
+    };
+
+    const ROLE_LABEL = {
+      Admin: "Администратор",
+      IB: "Специалист ИБ",
+      DeanOffice: "Учебная часть",
+      Teacher: "Преподаватель",
+      Student: "Студент",
+      Accountant: "Бухгалтер"
+    };
+
+    function roleLabel(role) {
+      return ROLE_LABEL[role] || role || "—";
+    }
+
+    const ROLES = ["Admin", "IB", "DeanOffice", "Teacher", "Student", "Accountant"];
+
+    const ACTION_LABEL = {
+      read: "просмотр",
+      create: "создание",
+      update: "изменение",
+      block: "блокировка",
+      activate: "активация",
+      download: "выгрузка"
+    };
+
+    function actionLabel(action) {
+      return ACTION_LABEL[action] || action;
+    }
+
+    function showAlert(id, type, message) {
+      const el = document.getElementById(id);
+      el.className = `alert ${type} show`;
+      el.textContent = message;
+      setTimeout(() => el.classList.remove("show"), 5500);
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function authHeaders(json = true) {
+      const headers = { Authorization: `Bearer ${state.token}` };
+      if (json) headers["Content-Type"] = "application/json";
+      return headers;
+    }
+
+    async function api(path, options = {}) {
+      const response = await fetch(API_BASE + path, options);
+      const type = response.headers.get("content-type") || "";
+      const data = type.includes("application/json") ? await response.json() : await response.text();
+      if (!response.ok) {
+        const detail = typeof data === "object" && data.detail ? data.detail : data;
+        throw new Error(`HTTP ${response.status}: ${detail}`);
+      }
+      return data;
+    }
+
+    function saveSession(data) {
+      state.token = data.access_token;
+      state.username = data.username;
+      state.fullName = data.full_name;
+      state.role = data.role;
+
+      localStorage.setItem("univ_token", state.token);
+      localStorage.setItem("univ_username", state.username);
+      localStorage.setItem("univ_full_name", state.fullName);
+      localStorage.setItem("univ_role", state.role);
+    }
+
+    function clearSession() {
+      state.token = "";
+      state.username = "";
+      state.fullName = "";
+      state.role = "";
+      localStorage.removeItem("univ_token");
+      localStorage.removeItem("univ_username");
+      localStorage.removeItem("univ_full_name");
+      localStorage.removeItem("univ_role");
+    }
+
+    function isAllowed(section) {
+      return (UI_ACCESS[section] || []).includes(state.role);
+    }
+
+    function setViews() {
+      const logged = Boolean(state.token);
+      document.getElementById("loginView").style.display = logged ? "none" : "grid";
+      document.getElementById("appView").style.display = logged ? "grid" : "none";
+
+      if (logged) {
+        document.getElementById("currentFullName").textContent = state.fullName || "Пользователь";
+        document.getElementById("currentUsername").textContent = state.username || "—";
+        document.getElementById("currentRole").textContent = `роль: ${roleLabel(state.role)}`;
+        document.getElementById("dashRole").textContent = roleLabel(state.role);
+        applyMenu();
+        openSection(DEFAULT_SECTION[state.role] || "dashboard");
+        loadDashboard();
+        loadProfile();
+      }
+    }
+
+    function applyMenu() {
+      document.querySelectorAll(".nav button[data-section]").forEach(btn => {
+        btn.classList.toggle("hidden", !isAllowed(btn.dataset.section));
+      });
+    }
+
+    function openSection(section) {
+      if (!isAllowed(section)) {
+        showAlert("globalAlert", "error", `Раздел недоступен для роли ${state.role}.`);
+        section = DEFAULT_SECTION[state.role] || "dashboard";
+      }
+
+      document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+      document.getElementById(section).classList.add("active");
+
+      document.querySelectorAll(".nav button").forEach(b => b.classList.remove("active"));
+      const active = document.querySelector(`.nav button[data-section="${section}"]`);
+      if (active) active.classList.add("active");
+
+      document.getElementById("pageTitle").textContent = TITLES[section][0];
+      document.getElementById("pageSubtitle").textContent = TITLES[section][1];
+
+      if (section === "students") loadStudents();
+      if (section === "grades") loadGrades();
+      if (section === "requests") loadRequests();
+    }
+
+    document.getElementById("nav").addEventListener("click", e => {
+      const btn = e.target.closest("button[data-section]");
+      if (btn) openSection(btn.dataset.section);
+    });
+
+    document.getElementById("loginForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      const body = new КДLSearchParams();
+      body.append("username", document.getElementById("loginUsername").value.trim());
+      body.append("password", document.getElementById("loginPassword").value);
+
+      try {
+        const data = await api("/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body
+        });
+        saveSession(data);
+        setViews();
+      } catch (err) {
+        showAlert("loginAlert", "error", err.message);
+      }
+    });
+
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+      try {
+        if (state.token) await api("/logout", { method: "POST", headers: authHeaders(false) });
+      } catch (_) {}
+      clearSession();
+      setViews();
+    });
+
+    async function loadDashboard() {
+      try {
+        const data = await api("/health");
+        document.getElementById("apiStatus").textContent = data.status === "ok" ? "OK" : "Ошибка";
+      } catch (_) {
+        document.getElementById("apiStatus").textContent = "Нет связи";
+      }
+    }
+
+    async function loadProfile() {
+      try {
+        const data = await api("/me", { headers: authHeaders(false) });
+        const allowed = data.available_modules || [];
+        const denied = data.unavailable_modules || [];
+
+        document.getElementById("профильBox").innerHTML = `
+          <div class="card" style="box-shadow:none; background:#f8fafc">
+            <h3>Доступные модули</h3>
+            ${allowed.map(m => `<span class="badge green">${escapeHtml(m.title)}</span>`).join(" ")}
+          </div>
+          <div class="card" style="box-shadow:none; background:#f8fafc">
+            <h3>Недоступные модули</h3>
+            ${denied.map(m => `<span class="badge red">${escapeHtml(m.title)}</span>`).join(" ")}
+          </div>
+        `;
+      } catch (err) {
+        document.getElementById("профильBox").innerHTML = `<div class="empty">${escapeHtml(err.message)}</div>`;
+      }
+    }
+
+    async function loadStudents() {
+      try {
+        const data = await api("/students", { headers: authHeaders(false) });
+        document.getElementById("studentsTable").innerHTML = `
+          <table>
+            <thead><tr><th>ID</th><th>Код</th><th>ФИО</th><th>Группа</th><th>Факультет</th><th>Статус</th></tr></thead>
+            <tbody>
+              ${data.map(s => `
+                <tr>
+                  <td>${s.id}</td>
+                  <td>${escapeHtml(s.student_code)}</td>
+                  <td><b>${escapeHtml(s.full_name)}</b></td>
+                  <td>${escapeHtml(s.group_name)}</td>
+                  <td>${escapeHtml(s.faculty)}</td>
+                  <td><span class="badge green">${escapeHtml(s.status)}</span></td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        `;
+      } catch (err) {
+        document.getElementById("studentsTable").innerHTML = `<div class="empty">${escapeHtml(err.message)}</div>`;
+      }
+    }
+
+    document.getElementById("studentForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      const payload = {
+        student_code: document.getElementById("studentCode").value.trim(),
+        full_name: document.getElementById("studentFullName").value.trim(),
+        group_name: document.getElementById("studentGroup").value.trim(),
+        faculty: document.getElementById("studentFaculty").value.trim(),
+        status: "Активен"
+      };
+
+      try {
+        const data = await api("/students", { method: "POST", headers: authHeaders(), body: JSON.stringify(payload) });
+        showAlert("globalAlert", "success", data.detail);
+        e.target.reset();
+        loadStudents();
+      } catch (err) {
+        showAlert("globalAlert", "error", err.message);
+      }
+    });
+
+    async function loadGrades() {
+      try {
+        const data = await api("/grades", { headers: authHeaders(false) });
+        document.getElementById("оценкиTable").innerHTML = `
+          <table>
+            <thead><tr><th>ID</th><th>Студент</th><th>Предмет</th><th>Оценка</th><th>Преподаватель</th><th>Дата</th></tr></thead>
+            <tbody>
+              ${data.map(g => `
+                <tr>
+                  <td>${g.id}</td>
+                  <td><b>${escapeHtml(g.student_name)}</b></td>
+                  <td>${escapeHtml(g.subject)}</td>
+                  <td><span class="badge blue">${escapeHtml(g.grade)}</span></td>
+                  <td>${escapeHtml(g.teacher)}</td>
+                  <td>${escapeHtml(g.created_at)}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        `;
+      } catch (err) {
+        document.getElementById("оценкиTable").innerHTML = `<div class="empty">${escapeHtml(err.message)}</div>`;
+      }
+    }
+
+    document.getElementById("gradeForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      const payload = {
+        student_name: document.getElementById("gradeStudent").value.trim(),
+        subject: document.getElementById("gradeSubject").value.trim(),
+        grade: document.getElementById("gradeValue").value.trim()
+      };
+
+      try {
+        const data = await api("/grades", { method: "POST", headers: authHeaders(), body: JSON.stringify(payload) });
+        showAlert("globalAlert", "success", data.detail);
+        e.target.reset();
+        loadGrades();
+      } catch (err) {
+        showAlert("globalAlert", "error", err.message);
+      }
+    });
+
+    async function loadRequests() {
+      try {
+        const data = await api("/academic-requests", { headers: authHeaders(false) });
+        document.getElementById("заявкиTable").innerHTML = `
+          <table>
+            <thead><tr><th>ID</th><th>Тема</th><th>Содержание</th><th>Отправитель</th><th>Статус</th><th>Дата</th></tr></thead>
+            <tbody>
+              ${data.map(r => `
+                <tr>
+                  <td>${r.id}</td>
+                  <td><b>${escapeHtml(r.title)}</b></td>
+                  <td>${escapeHtml(r.content)}</td>
+                  <td>${escapeHtml(r.sender)}</td>
+                  <td><span class="badge green">${escapeHtml(r.status)}</span></td>
+                  <td>${escapeHtml(r.created_at)}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        `;
+      } catch (err) {
+        document.getElementById("заявкиTable").innerHTML = `<div class="empty">${escapeHtml(err.message)}</div>`;
+      }
+    }
+
+    document.getElementById("requestForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      const payload = {
+        title: document.getElementById("requestTitle").value.trim(),
+        content: document.getElementById("requestContent").value.trim()
+      };
+
+      try {
+        const data = await api("/academic-requests", { method: "POST", headers: authHeaders(), body: JSON.stringify(payload) });
+        showAlert("globalAlert", "success", data.detail);
+        loadRequests();
+      } catch (err) {
+        showAlert("globalAlert", "error", err.message);
+      }
+    });
+
+    async function loadFinance() {
+      try {
+        const data = await api("/finance-report", { headers: authHeaders(false) });
+        document.getElementById("финансыTotal").textContent = `${Number(data.total_amount).toFixed(2)} сом`;
+        document.getElementById("финансыCount").textContent = `Количество платежей: ${data.payments_count}`;
+        document.getElementById("финансыTable").innerHTML = `
+          <table>
+            <thead><tr><th>ID</th><th>Студент</th><th>Назначение</th><th>Сумма</th><th>Статус</th><th>Дата</th></tr></thead>
+            <tbody>
+              ${data.payments.map(p => `
+                <tr>
+                  <td>${p.id}</td>
+                  <td><b>${escapeHtml(p.student_name)}</b></td>
+                  <td>${escapeHtml(p.purpose)}</td>
+                  <td>${Number(p.amount).toFixed(2)} сом</td>
+                  <td><span class="badge green">${escapeHtml(p.status)}</span></td>
+                  <td>${escapeHtml(p.timestamp)}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        `;
+      } catch (err) {
+        document.getElementById("финансыTable").innerHTML = `<div class="empty">${escapeHtml(err.message)}</div>`;
+        showAlert("globalAlert", "error", err.message);
+      }
+    }
+
+    async function loadSecurityReport() {
+      try {
+        const r = await api("/security-report", { headers: authHeaders(false) });
+        document.getElementById("securityStats").innerHTML = `
+          ${statCard("Пользователи", r.users_total)}
+          ${statCard("Активные", r.active_users)}
+          ${statCard("Запрещённые попытки", r.forbidden_access_events)}
+          ${statCard("Ошибки входа", r.failed_login_events)}
+          ${statCard("События ИБ", r.events_total)}
+          ${statCard("Временные блокировки", r.temporary_locked_users)}
+        `;
+      } catch (err) {
+        showAlert("globalAlert", "error", err.message);
+      }
+    }
+
+    function statCard(title, value) {
+      return `<div class="card stat"><h3>${escapeHtml(title)}</h3><div class="stat-value">${escapeHtml(value)}</div></div>`;
+    }
+
+    async function loadLogs() {
+      try {
+        const logs = await api("/security-logs", { headers: authHeaders(false) });
+        document.getElementById("logsTable").innerHTML = `
+          <table>
+            <thead><tr><th>ID</th><th>Событие</th><th>Пользователь</th><th>Роль</th><th>Детали</th><th>Дата</th></tr></thead>
+            <tbody>
+              ${logs.map(l => `
+                <tr>
+                  <td>${l.id}</td>
+                  <td><span class="badge orange">${escapeHtml(l.event)}</span></td>
+                  <td>${escapeHtml(l.username)}</td>
+                  <td>${escapeHtml(roleLabel(l.role))}</td>
+                  <td>${escapeHtml(l.details)}</td>
+                  <td>${escapeHtml(l.timestamp)}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        `;
+      } catch (err) {
+        document.getElementById("logsTable").innerHTML = `<div class="empty">${escapeHtml(err.message)}</div>`;
+      }
+    }
+
+    document.getElementById("userForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      const payload = {
+        full_name: document.getElementById("newFullName").value.trim(),
+        username: document.getElementById("newUsername").value.trim(),
+        password: document.getElementById("newPassword").value,
+        role_id: Number(document.getElementById("newRoleId").value)
+      };
+
+      try {
+        const data = await api("/register", { method: "POST", headers: authHeaders(), body: JSON.stringify(payload) });
+        showAlert("globalAlert", "success", data.detail);
+        e.target.reset();
+        loadUsers();
+      } catch (err) {
+        showAlert("globalAlert", "error", err.message);
+      }
+    });
+
+    async function loadUsers() {
+      try {
+        const users = await api("/users", { headers: authHeaders(false) });
+        document.getElementById("usersTable").innerHTML = `
+          <table>
+            <thead><tr><th>ID</th><th>ФИО</th><th>Логин</th><th>Роль</th><th>Статус</th><th>Ошибки входа</th><th>Действие</th></tr></thead>
+            <tbody>
+              ${users.map(u => `
+                <tr>
+                  <td>${u.id}</td>
+                  <td><b>${escapeHtml(u.full_name)}</b></td>
+                  <td>${escapeHtml(u.username)}</td>
+                  <td><span class="badge ${ROLE_COLOR[u.role] || 'gray'}">${escapeHtml(roleLabel(u.role))}</span></td>
+                  <td>${u.is_active === 1 ? '<span class="badge green">Активен</span>' : '<span class="badge red">Заблокирован</span>'}</td>
+                  <td>${u.failed_login_attempts}</td>
+                  <td>
+                    ${u.username === "admin"
+                      ? '<span class="badge gray">system</span>'
+                      : `<button class="btn ${u.is_active === 1 ? 'danger' : 'success'}" onclick="toggleUser('${escapeHtml(u.username)}', ${u.is_active === 1 ? 0 : 1})">${u.is_active === 1 ? 'Заблокировать' : 'Активировать'}</button>`}
+                  </td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        `;
+      } catch (err) {
+        document.getElementById("usersTable").innerHTML = `<div class="empty">${escapeHtml(err.message)}</div>`;
+      }
+    }
+
+    async function toggleUser(username, status) {
+      try {
+        const data = await api(`/users/${encodeКДIComponent(username)}/status`, {
+          method: "POST",
+          headers: authHeaders(),
+          body: JSON.stringify({ is_active: status })
+        });
+        showAlert("globalAlert", "success", data.detail);
+        loadUsers();
+      } catch (err) {
+        showAlert("globalAlert", "error", err.message);
+      }
+    }
+
+    async function loadMatrix() {
+      try {
+        const data = await api("/access-matrix", { headers: authHeaders(false) });
+        const entries = Object.entries(data.access_matrix || {});
+
+        document.getElementById("matrixTable").innerHTML = `
+          <table>
+            <thead>
+              <tr>
+                <th>Модуль / операция</th>
+                <th>Действия</th>
+                ${ROLES.map(r => `<th>${escapeHtml(roleLabel(r))}</th>`).join("")}
+              </tr>
+            </thead>
+            <tbody>
+              ${entries.map(([key, item]) => `
+                <tr>
+                  <td><b>${escapeHtml(item.title)}</b><br><span class="desc" style="margin:0">${escapeHtml(key)}</span></td>
+                  <td>${(item.actions || []).map(a => `<span class="badge gray">${escapeHtml(actionLabel(a))}</span>`).join(" ")}</td>
+                  ${ROLES.map(r => item.roles.includes(r)
+                    ? `<td><span class="badge green">+</span></td>`
+                    : `<td><span class="badge red">-</span></td>`
+                  ).join("")}
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        `;
+      } catch (err) {
+        document.getElementById("matrixTable").innerHTML = `<div class="empty">${escapeHtml(err.message)}</div>`;
+      }
+    }
+
+    async function runAccessTests() {
+      const tests = [
+        { name: "Профиль пользователя", method: "GET", path: "/me" },
+        { name: "Карточки студентов", method: "GET", path: "/students" },
+        { name: "Оценки", method: "GET", path: "/grades" },
+        { name: "Академические заявки", method: "GET", path: "/academic-requests" },
+        { name: "Финансовый отчет", method: "GET", path: "/finance-report" },
+        { name: "Журнал безопасности", method: "GET", path: "/security-logs" },
+        { name: "Пользователи", method: "GET", path: "/users" },
+        { name: "Матрица доступа", method: "GET", path: "/access-matrix" }
+      ];
+
+      const results = [];
+      for (const test of tests) {
+        try {
+          await api(test.path, { method: test.method, headers: authHeaders(false) });
+          results.push({ ...test, result: "Разрешено", code: "200", allowed: true });
+        } catch (err) {
+          const match = err.message.match(/HTTP\s+(\d+)/);
+          const code = match ? match[1] : "-";
+          results.push({ ...test, result: "Запрещено", code, allowed: false });
+        }
+      }
+
+      document.getElementById("testsTable").innerHTML = `
+        <table>
+          <thead><tr><th>Проверяемое действие</th><th>Endpoint</th><th>HTTP</th><th>Результат</th></tr></thead>
+          <tbody>
+            ${results.map(r => `
+              <tr>
+                <td><b>${escapeHtml(r.name)}</b></td>
+                <td><span class="mono">${escapeHtml(r.path)}</span></td>
+                <td>${escapeHtml(r.code)}</td>
+                <td>${r.allowed ? '<span class="badge green">Разрешено</span>' : '<span class="badge red">Запрещено</span>'}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      `;
+
+      showAlert("globalAlert", "info", "Проверка завершена. Запрещенные запросы записываются в журнал безопасности.");
+    }
+
+    async function downloadFile(path, filename) {
+      try {
+        const response = await fetch(API_BASE + path, { headers: authHeaders(false) });
+        if (!response.ok) throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+
+        const blob = await response.blob();
+        const url = КДL.createObjectКДL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        КДL.revokeObjectКДL(url);
+      } catch (err) {
+        showAlert("globalAlert", "error", err.message);
+      }
+    }
+
+    setViews();
+  </script>
+</body>
+</html>
