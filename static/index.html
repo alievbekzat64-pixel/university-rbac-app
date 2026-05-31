@@ -275,7 +275,7 @@
     .stat-value { font-size: 26px; font-weight: 800; color: var(--primary); margin-top: 5px; }
     .mono { font-family: Consolas, Monaco, monospace; font-size: 13px; white-space: pre-wrap; word-break: break-word; }
 
-    .профиль-lists {
+    .profile-lists {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 16px;
@@ -283,7 +283,7 @@
 
     @media (max-width: 1100px) {
       .app { grid-template-columns: 1fr; }
-      .grid-2, .grid-3, .профиль-lists { grid-template-columns: 1fr; }
+      .grid-2, .grid-3, .profile-lists { grid-template-columns: 1fr; }
       .nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
 
@@ -301,11 +301,11 @@
     <div class="login-box">
       <div class="login-info">
         <h1>Система контроля доступа</h1>
-        <p>Веб-приложение для управления пользователями, ролями и доступом к разделам.</p>
+        <p>Веб-приложение для управления пользователями, ролями и правами доступа.</p>
         <p>Система показывает, как разные пользователи получают доступ только к разрешённым разделам.</p>
         <div class="login-points">
-          <div class="login-point">доступ ограничивает доступ к разделам и действиям.</div>
-          <div class="login-point">Запрещённые действия возвращают HTTP проверка и попадают в журнал безопасности.</div>
+          <div class="login-point">RBAC ограничивает доступ к разделам и действиям.</div>
+          <div class="login-point">Запрещённые действия возвращают HTTP 403 и попадают в журнал безопасности.</div>
           <div class="login-point">Отчёты по безопасности и матрице доступа можно скачать в TXT.</div>
         </div>
       </div>
@@ -384,7 +384,7 @@
             </div>
             <div class="card stat">
               <h3>Модель</h3>
-              <div class="stat-value">доступ</div>
+              <div class="stat-value">RBAC</div>
               <p class="desc">Разделение прав по ролям</p>
             </div>
           </div>
@@ -392,7 +392,7 @@
           <div class="card" style="margin-top:16px">
             <h2>Профиль пользователя</h2>
             <p class="desc">Здесь показано, какие модули доступны текущей роли и какие действия для неё запрещены.</p>
-            <div id="профильBox" class="профиль-lists">
+            <div id="profileBox" class="profile-lists">
               <div class="empty">Профиль загружается...</div>
             </div>
           </div>
@@ -408,7 +408,7 @@
 
             <div class="card">
               <h2>Добавить студента</h2>
-              <p class="desc">Доступ на создание: Администратор, учебная часть.</p>
+              <p class="desc">Доступ на создание: Admin, DeanOffice.</p>
               <form id="studentForm" class="form">
                 <label>Код студента <input id="studentCode" placeholder="KSTU-2026-004" required></label>
                 <label>ФИО <input id="studentFullName" placeholder="Фамилия Имя" required></label>
@@ -429,13 +429,13 @@
           <div class="grid grid-2">
             <div class="card">
               <h2>Ведомость оценок</h2>
-              <p class="desc">Просмотр: Администратор, учебная часть, Teacher, Student. Выставление: администратор, преподаватель.</p>
+              <p class="desc">Просмотр: Admin, DeanOffice, Teacher, Student. Выставление: Admin, Teacher.</p>
               <button class="btn" onclick="loadGrades()">Загрузить оценки</button>
             </div>
 
             <div class="card">
               <h2>Выставить оценку</h2>
-              <p class="desc">Доступ: администратор, преподаватель.</p>
+              <p class="desc">Доступ: Admin, Teacher.</p>
               <form id="gradeForm" class="form">
                 <label>Студент <input id="gradeStudent" placeholder="Субанов Батырбек" required></label>
                 <label>Предмет <input id="gradeSubject" placeholder="Безопасность веб-приложений" required></label>
@@ -447,7 +447,7 @@
 
           <div class="card" style="margin-top:16px">
             <h2>Оценки</h2>
-            <div id="оценкиTable" class="table-box"><div class="empty">Нажмите «Загрузить оценки»</div></div>
+            <div id="gradesTable" class="table-box"><div class="empty">Нажмите «Загрузить оценки»</div></div>
           </div>
         </section>
 
@@ -455,7 +455,7 @@
           <div class="grid grid-2">
             <div class="card">
               <h2>Создать академическую заявку</h2>
-              <p class="desc">Доступ: Администратор, учебная часть, Student.</p>
+              <p class="desc">Доступ: Admin, DeanOffice, Student.</p>
               <form id="requestForm" class="form">
                 <label>Тема <input id="requestTitle" placeholder="Справка с места учебы" required></label>
                 <label>Содержание <textarea id="requestContent" required>Прошу выдать справку с места учебы.</textarea></label>
@@ -465,14 +465,14 @@
 
             <div class="card">
               <h2>Реестр заявок</h2>
-              <p class="desc">Просмотр: Администратор, учебная часть, Teacher, Student.</p>
+              <p class="desc">Просмотр: Admin, DeanOffice, Teacher, Student.</p>
               <button class="btn" onclick="loadRequests()">Загрузить заявки</button>
             </div>
           </div>
 
           <div class="card" style="margin-top:16px">
             <h2>Заявки</h2>
-            <div id="заявкиTable" class="table-box"><div class="empty">Нажмите «Загрузить заявки»</div></div>
+            <div id="requestsTable" class="table-box"><div class="empty">Нажмите «Загрузить заявки»</div></div>
           </div>
         </section>
 
@@ -480,18 +480,18 @@
           <div class="grid grid-2">
             <div class="card">
               <h2>Бухгалтерский отчет</h2>
-              <p class="desc">Доступ: администратор, бухгалтер.</p>
+              <p class="desc">Доступ: Admin, Accountant.</p>
               <button class="btn" onclick="loadFinance()">Показать отчет</button>
             </div>
             <div class="card stat">
               <h3>Общая сумма оплат</h3>
-              <div id="финансыTotal" class="stat-value">—</div>
-              <p id="финансыCount" class="desc">Количество платежей: —</p>
+              <div id="financeTotal" class="stat-value">—</div>
+              <p id="financeCount" class="desc">Количество платежей: —</p>
             </div>
           </div>
           <div class="card" style="margin-top:16px">
             <h2>Платежи студентов</h2>
-            <div id="финансыTable" class="table-box"><div class="empty">Нажмите «Показать отчет»</div></div>
+            <div id="financeTable" class="table-box"><div class="empty">Нажмите «Показать отчет»</div></div>
           </div>
         </section>
 
@@ -499,10 +499,10 @@
           <div class="grid grid-2">
             <div class="card">
               <h2>Отчет по безопасности</h2>
-              <p class="desc">Доступ: администратор, специалист ИБ. Показывает активных пользователей, блокировки, ошибки входа и запреты доступа.</p>
+              <p class="desc">Доступ: Admin, IB. Показывает активных пользователей, блокировки, ошибки входа и запреты доступа.</p>
               <div class="btn-row">
                 <button class="btn" onclick="loadSecurityReport()">Показать отчет</button>
-                <button class="btn secondary" onclick="downloadFile('/security-report/download', 'UNIVERSITY_SECКДITY_REPORT.txt')">Скачать отчет</button>
+                <button class="btn secondary" onclick="downloadFile('/security-report/download', 'UNIVERSITY_SECURITY_REPORT.txt')">Скачать отчет</button>
               </div>
             </div>
             <div class="card">
@@ -510,7 +510,7 @@
               <p class="desc">Здесь фиксируются входы, ошибки и forbidden-access события.</p>
               <div class="btn-row">
                 <button class="btn" onclick="loadLogs()">Загрузить логи</button>
-                <button class="btn secondary" onclick="downloadFile('/security-logs/download', 'журнал_SECКДITY_LOGS.txt')">Скачать логи</button>
+                <button class="btn secondary" onclick="downloadFile('/security-logs/download', 'SIEM_SECURITY_LOGS.txt')">Скачать логи</button>
               </div>
             </div>
           </div>
@@ -527,7 +527,7 @@
           <div class="grid grid-2">
             <div class="card">
               <h2>Создать пользователя</h2>
-              <p class="desc">Доступ: только администратор. Пользователи создаются вручную администратором.</p>
+              <p class="desc">Доступ: только Admin. Готовые тестовые пользователи автоматически не создаются.</p>
               <form id="userForm" class="form">
                 <label>ФИО <input id="newFullName" placeholder="Иванов Иван" required></label>
                 <label>Логин <input id="newUsername" placeholder="teacher1" required></label>
@@ -563,15 +563,15 @@
         <section id="matrix" class="section">
           <div class="card">
             <h2>Матрица разделения прав доступа</h2>
-            <p class="desc">Таблица показывает роли и операции для каждого модуля. Это можно использовать в дипломе как результат проектирования доступ.</p>
+            <p class="desc">Таблица показывает роли и операции для каждого модуля. Это можно использовать в дипломе как результат проектирования RBAC.</p>
             <div class="btn-row">
               <button class="btn" onclick="loadMatrix()">Загрузить матрицу</button>
-              <button class="btn secondary" onclick="downloadFile('/rbac-report/download', 'доступ_ACCESS_MATRIX_REPORT.txt')">Скачать доступ-отчет</button>
+              <button class="btn secondary" onclick="downloadFile('/rbac-report/download', 'RBAC_ACCESS_MATRIX_REPORT.txt')">Скачать RBAC-отчет</button>
             </div>
           </div>
 
           <div class="card" style="margin-top:16px">
-            <h2>доступ-таблица</h2>
+            <h2>RBAC-таблица</h2>
             <div id="matrixTable" class="table-box"><div class="empty">Нажмите «Загрузить матрицу»</div></div>
           </div>
         </section>
@@ -581,7 +581,7 @@
             <h2>Проверка доступа текущей роли</h2>
             <p class="desc">
               Система выполнит реальные запросы к защищенным endpoint-ам. Если роль не имеет права,
-              сервер вернет HTTP проверка и событие попадет в журнал безопасности.
+              сервер вернет HTTP 403 и событие попадет в журнал безопасности.
             </p>
             <button class="btn warning" onclick="runAccessTests()">Запустить проверку доступа</button>
           </div>
@@ -786,7 +786,7 @@
 
     document.getElementById("loginForm").addEventListener("submit", async e => {
       e.preventDefault();
-      const body = new КДLSearchParams();
+      const body = new URLSearchParams();
       body.append("username", document.getElementById("loginUsername").value.trim());
       body.append("password", document.getElementById("loginPassword").value);
 
@@ -826,7 +826,7 @@
         const allowed = data.available_modules || [];
         const denied = data.unavailable_modules || [];
 
-        document.getElementById("профильBox").innerHTML = `
+        document.getElementById("profileBox").innerHTML = `
           <div class="card" style="box-shadow:none; background:#f8fafc">
             <h3>Доступные модули</h3>
             ${allowed.map(m => `<span class="badge green">${escapeHtml(m.title)}</span>`).join(" ")}
@@ -837,7 +837,7 @@
           </div>
         `;
       } catch (err) {
-        document.getElementById("профильBox").innerHTML = `<div class="empty">${escapeHtml(err.message)}</div>`;
+        document.getElementById("profileBox").innerHTML = `<div class="empty">${escapeHtml(err.message)}</div>`;
       }
     }
 
@@ -889,7 +889,7 @@
     async function loadGrades() {
       try {
         const data = await api("/grades", { headers: authHeaders(false) });
-        document.getElementById("оценкиTable").innerHTML = `
+        document.getElementById("gradesTable").innerHTML = `
           <table>
             <thead><tr><th>ID</th><th>Студент</th><th>Предмет</th><th>Оценка</th><th>Преподаватель</th><th>Дата</th></tr></thead>
             <tbody>
@@ -907,7 +907,7 @@
           </table>
         `;
       } catch (err) {
-        document.getElementById("оценкиTable").innerHTML = `<div class="empty">${escapeHtml(err.message)}</div>`;
+        document.getElementById("gradesTable").innerHTML = `<div class="empty">${escapeHtml(err.message)}</div>`;
       }
     }
 
@@ -932,7 +932,7 @@
     async function loadRequests() {
       try {
         const data = await api("/academic-requests", { headers: authHeaders(false) });
-        document.getElementById("заявкиTable").innerHTML = `
+        document.getElementById("requestsTable").innerHTML = `
           <table>
             <thead><tr><th>ID</th><th>Тема</th><th>Содержание</th><th>Отправитель</th><th>Статус</th><th>Дата</th></tr></thead>
             <tbody>
@@ -950,7 +950,7 @@
           </table>
         `;
       } catch (err) {
-        document.getElementById("заявкиTable").innerHTML = `<div class="empty">${escapeHtml(err.message)}</div>`;
+        document.getElementById("requestsTable").innerHTML = `<div class="empty">${escapeHtml(err.message)}</div>`;
       }
     }
 
@@ -973,9 +973,9 @@
     async function loadFinance() {
       try {
         const data = await api("/finance-report", { headers: authHeaders(false) });
-        document.getElementById("финансыTotal").textContent = `${Number(data.total_amount).toFixed(2)} сом`;
-        document.getElementById("финансыCount").textContent = `Количество платежей: ${data.payments_count}`;
-        document.getElementById("финансыTable").innerHTML = `
+        document.getElementById("financeTotal").textContent = `${Number(data.total_amount).toFixed(2)} сом`;
+        document.getElementById("financeCount").textContent = `Количество платежей: ${data.payments_count}`;
+        document.getElementById("financeTable").innerHTML = `
           <table>
             <thead><tr><th>ID</th><th>Студент</th><th>Назначение</th><th>Сумма</th><th>Статус</th><th>Дата</th></tr></thead>
             <tbody>
@@ -993,7 +993,7 @@
           </table>
         `;
       } catch (err) {
-        document.getElementById("финансыTable").innerHTML = `<div class="empty">${escapeHtml(err.message)}</div>`;
+        document.getElementById("financeTable").innerHTML = `<div class="empty">${escapeHtml(err.message)}</div>`;
         showAlert("globalAlert", "error", err.message);
       }
     }
@@ -1094,7 +1094,7 @@
 
     async function toggleUser(username, status) {
       try {
-        const data = await api(`/users/${encodeКДIComponent(username)}/status`, {
+        const data = await api(`/users/${encodeURIComponent(username)}/status`, {
           method: "POST",
           headers: authHeaders(),
           body: JSON.stringify({ is_active: status })
@@ -1188,14 +1188,14 @@
         if (!response.ok) throw new Error(`HTTP ${response.status}: ${await response.text()}`);
 
         const blob = await response.blob();
-        const url = КДL.createObjectКДL(blob);
+        const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
         a.download = filename;
         document.body.appendChild(a);
         a.click();
         a.remove();
-        КДL.revokeObjectКДL(url);
+        URL.revokeObjectURL(url);
       } catch (err) {
         showAlert("globalAlert", "error", err.message);
       }
