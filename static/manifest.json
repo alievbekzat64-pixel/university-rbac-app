@@ -1,0 +1,16 @@
+{
+  "short_name": "SABYRBEKOV ERP",
+  "name": "SABYRBEKOV ERP PRO v3.5",
+  "icons": [
+    {
+      "src": "/static/mbank_qr.jpeg",
+      "type": "image/jpeg",
+      "sizes": "192x192"
+    }
+  ],
+  "start_url": "/static/index.html",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "display": "standalone",
+  "orientation": "any"
+}

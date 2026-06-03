@@ -49,6 +49,11 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./university_rbac.db")
+# Render/PostgreSQL sometimes gives an URL that starts with postgres://.
+# SQLAlchemy expects postgresql://, so we normalize it here.
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
 STATIC_DIR = os.getenv("STATIC_DIR", "./static")
 EXPORT_DIR = os.getenv("EXPORT_DIR", "./app_data/university_exports")
 
@@ -69,6 +74,7 @@ bearer_scheme = HTTPBearer(auto_error=False)
 engine = create_engine(
     DATABASE_URL,
     connect_args={"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {},
+    pool_pre_ping=True,
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
